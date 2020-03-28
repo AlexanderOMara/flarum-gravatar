@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+
+  php:
+    build:
+      context: php
+    ports:
+    - '80:80'
+    - '443:443'
+    networks:
+    - webnet
+    volumes:
+    - ./vol/htdocs:/var/www/html
+    - ..:/flarum-packages/flarum-gravatar
+    environment:
+      FLARUM_DB_HOST: mysql
+      FLARUM_DB_USER: root
+      FLARUM_DB_PASS: toor
+      FLARUM_DB_NAME: flarum
+      FLARUM_DB_PREFIX: flpre_
+      FLARUM_INSTALL_URL: 'https://flarum-gravatar.localhost'
+      FLARUM_INSTALL_TITLE: 'Test Flarum Site'
+      FLARUM_INSTALL_ADMIN_USER: admin
+      FLARUM_INSTALL_ADMIN_EMAIL: admin@example.com
+      FLARUM_INSTALL_ADMIN_PASS: nimda
+      FLARUM_CFG_DEBUG: 1
+
+  mysql:
+    image: mysql:5.7
+    ports:
+    - '3306:3306'
+    networks:
+    - webnet
+    volumes:
+    - ./vol/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: toor
+
+networks:
+  webnet:

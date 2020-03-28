@@ -1,0 +1,119 @@
+#!/bin/bash
+set -o errexit
+set -o nounset
+set -o pipefail
+
+flarum_version='v0.1.0-beta.12'
+
+flarum_config_json='/tmp/flarum.json'
+
+# Wait for and optionally create a MySQL table.
+wait_for_mysql() {
+	TERM=dumb php -- "$1" "$2" "$3" "${4:-}" \
+<<'EOF'
+<?php
+list($host, $socket) = explode(':', $argv[1], 2);
+$port = is_numeric($socket) ? (int)$socket : 0;
+$socket = $port ? null : $socket;
+$user = $argv[2];
+$pass = $argv[3];
+$table = $argv[4];
+$tries = 10;
+do {
+	echo 'Checking for MySQL connection...', "\n";
+	$mysql = new mysqli($host, $user, $pass, '', $port, $socket);
+	if ($mysql->connect_error) {
+		if (--$tries <= 0) {
+			exit(1);
+		}
+		sleep(3);
+	}
+}
+while ($mysql->connect_error);
+if (!empty($table)) {
+	$table_esc = $mysql->real_escape_string($table);
+	if (!$mysql->query("CREATE DATABASE IF NOT EXISTS `{$table_esc}`")) {
+		echo $mysql->error, "\n";
+		$mysql->close();
+		exit(1);
+	}
+}
+$mysql->close();
+EOF
+}
+
+# Install Flarum if not yet installed.
+if [[ ! -d 'vendor' ]]; then
+	echo 'Installing Flarum: Starting'
+
+	# Download Flarum.
+	composer create-project \
+		--stability=beta \
+		flarum/flarum \
+		. \
+		"${flarum_version}"
+	chmod +x flarum
+
+	# Remove public directory from directory structure.
+	pushd public > /dev/null
+	for f in {.*,*}; do
+		if [[ "${f}" == '.' || "${f}" == '..' ]]; then
+			continue
+		fi
+		mv "${f}" "../${f}"
+	done
+	popd > /dev/null
+	rmdir public
+	sed -i "s/\/public//g" site.php
+	sed -i "s/\.\.\/site\.php/\.\/site\.php/g" index.php
+	sed -i "s/# RewriteRule /RewriteRule /g" .htaccess
+
+	# Wait for the DB host to be ready, and ensure table exists.
+	wait_for_mysql \
+		"${FLARUM_DB_HOST}" \
+		"${FLARUM_DB_USER}" \
+		"${FLARUM_DB_PASS}" \
+		"${FLARUM_DB_NAME}"
+
+	# Create the install config, run install, cleanup config.
+	TERM=dumb php -- "${flarum_config_json}" \
+<<'EOF'
+<?php
+list($host, $socket) = explode(':', $_ENV['FLARUM_DB_HOST'], 2);
+$port = is_numeric($socket) ? (int)$socket : 0;
+file_put_contents($argv[1], json_encode([
+	'debug' => false,
+	'baseUrl' => $_ENV['FLARUM_INSTALL_URL'],
+	'databaseConfiguration' => [
+		'driver' => 'mysql',
+		'host' => $host,
+		'port' => $port ? $port : 3306,
+		'database' => $_ENV['FLARUM_DB_NAME'],
+		'username' => $_ENV['FLARUM_DB_USER'],
+		'password' => $_ENV['FLARUM_DB_PASS'],
+		'prefix' => $_ENV['FLARUM_DB_PREFIX']
+	],
+	'adminUser' => [
+		'username' => $_ENV['FLARUM_INSTALL_ADMIN_USER'],
+		'password' => $_ENV['FLARUM_INSTALL_ADMIN_PASS'],
+		'email' => $_ENV['FLARUM_INSTALL_ADMIN_EMAIL']
+	],
+	'settings' => [
+		'forum_title' => $_ENV['FLARUM_INSTALL_TITLE']
+	]
+], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
+EOF
+	./flarum install -f "${flarum_config_json}"
+	rm "${flarum_config_json}"
+
+	# Make config use ENV for debug.
+	sed -i \
+		"s/'debug' => false/'debug' => filter_var\(\$_ENV\[\'FLARUM_CFG_DEBUG\'\] \?\? false, FILTER_VALIDATE_BOOLEAN\)/g" \
+		'config.php'
+
+	# Install package.
+	composer config repositories.0 path '/flarum-packages/*'
+	composer require 'alexanderomara/flarum-gravatar' '*@dev'
+
+	echo 'Installing Flarum: Complete'
+fi
