@@ -18,7 +18,7 @@ class UploadAvatarController implements Handler {
 	/**
 	 * Settings object.
 	 */
-	protected SettingsRepositoryInterface $settings;
+	protected /*SettingsRepositoryInterface*/ $settings;
 
 	/**
 	 * Upload avatar intercept controller.

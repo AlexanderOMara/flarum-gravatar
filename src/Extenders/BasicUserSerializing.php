@@ -18,7 +18,7 @@ class BasicUserSerializing implements ExtenderInterface {
 	/**
 	 * Container object.
 	 */
-	protected ?Container $container = null;
+	protected /*?Container*/ $container = null;
 
 	/**
 	 * Extend method.
