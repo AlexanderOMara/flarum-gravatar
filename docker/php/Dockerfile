@@ -1,4 +1,4 @@
-FROM php:7.4.2-apache
+FROM php:7.4.5-apache
 
 RUN apt-get update && \
 	apt-get install -y  --no-install-recommends \
@@ -31,7 +31,7 @@ RUN apt-get update && \
 	a2ensite default-ssl && \
 	curl -L -s \
 		-o /usr/local/bin/composer \
-		https://getcomposer.org/download/1.10.1/composer.phar \
+		https://getcomposer.org/download/1.10.6/composer.phar \
 	&& \
 	chmod +x /usr/local/bin/composer
 

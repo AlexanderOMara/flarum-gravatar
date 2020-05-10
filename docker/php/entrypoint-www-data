@@ -3,7 +3,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-flarum_version='v0.1.0-beta.12'
+flarum_version='v0.1.0-beta.13'
 
 flarum_config_json='/tmp/flarum.json'
 
