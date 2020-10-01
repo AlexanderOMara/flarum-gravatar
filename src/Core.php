@@ -12,11 +12,15 @@ use Flarum\User\User;
 class Core {
 	/**
 	 * Extension identifier.
+	 *
+	 * @var string
 	 */
 	public const ID = 'alexanderomara-gravatar';
 
 	/**
 	 * Largest usage is 96, use 2x for higher DPX screens.
+	 *
+	 * @var int
 	 */
 	public const SIZE_LARGEST_2X = (96 * 2);
 

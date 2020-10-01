@@ -17,6 +17,8 @@ use AlexanderOMara\FlarumGravatar\Response\NullResponse;
 class UploadAvatarController implements Handler {
 	/**
 	 * Settings object.
+	 *
+	 * @var SettingsRepositoryInterface
 	 */
 	protected /*SettingsRepositoryInterface*/ $settings;
 

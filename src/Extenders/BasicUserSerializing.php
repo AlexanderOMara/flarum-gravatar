@@ -17,6 +17,8 @@ use AlexanderOMara\FlarumGravatar\Core;
 class BasicUserSerializing implements ExtenderInterface {
 	/**
 	 * Container object.
+	 *
+	 * @var Container|null
 	 */
 	protected /*?Container*/ $container = null;
 
