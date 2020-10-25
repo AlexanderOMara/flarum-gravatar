@@ -1,3 +1,5 @@
+import app from 'flarum/app';
+
 import {ID} from '../config';
 
 export function data() {

@@ -1,5 +1,3 @@
-import app from 'flarum/app';
-
 import {matches, copyElement} from './dom';
 import {data} from './util';
 
