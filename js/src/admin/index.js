@@ -7,7 +7,5 @@ import {GravatarSettingsModal} from './components/GravatarSettingsModal';
 app.initializers.add(ID, () => {
 	intercept();
 
-	app.extensionSettings[ID] = () => app.modal.show(
-		new GravatarSettingsModal()
-	);
+	app.extensionSettings[ID] = () => app.modal.show(GravatarSettingsModal);
 });
