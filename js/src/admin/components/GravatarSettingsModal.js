@@ -12,7 +12,10 @@ export class GravatarSettingsModal extends SettingsModal {
 	}
 
 	form() {
-		const setting = key => this.setting(`${ID}.${key}`);
+		const self = this;
+		const setting = (key, type = String) => function() {
+			return type(self.setting(`${ID}.${key}`).apply(this, arguments));
+		};
 		return [
 			<div className="Form-group">
 				<label>Default (<code>mp</code>, <code>identicon</code>, <code>retro</code>, [URL], ...)</label>
@@ -21,7 +24,7 @@ export class GravatarSettingsModal extends SettingsModal {
 			,
 			<div className="Form-group">
 				<label className="checkbox">
-					<input type="checkbox" bidi={setting('default_force')}/>
+					<input type="checkbox" bidi={setting('default_force', Number)}/>
 					Force Default Gravatar Icons
 				</label>
 			</div>
@@ -33,14 +36,14 @@ export class GravatarSettingsModal extends SettingsModal {
 			,
 			<div className="Form-group">
 				<label className="checkbox">
-					<input type="checkbox" bidi={setting('disable_local')}/>
+					<input type="checkbox" bidi={setting('disable_local', Number)}/>
 					Disable Local Avatars
 				</label>
 			</div>
 			,
 			<div className="Form-group">
 				<label className="checkbox">
-					<input type="checkbox" bidi={setting('link_new_tab')}/>
+					<input type="checkbox" bidi={setting('link_new_tab', Number)}/>
 					Gravatar Link New Tab
 				</label>
 			</div>
