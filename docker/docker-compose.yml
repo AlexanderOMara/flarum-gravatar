@@ -19,7 +19,7 @@ services:
       FLARUM_DB_PASS: toor
       FLARUM_DB_NAME: flarum
       FLARUM_DB_PREFIX: flpre_
-      FLARUM_INSTALL_URL: 'https://flarum-gravatar.localhost'
+      FLARUM_INSTALL_URL: 'https://localhost'
       FLARUM_INSTALL_TITLE: 'Test Flarum Site'
       FLARUM_INSTALL_ADMIN_USER: admin
       FLARUM_INSTALL_ADMIN_EMAIL: admin@example.com
