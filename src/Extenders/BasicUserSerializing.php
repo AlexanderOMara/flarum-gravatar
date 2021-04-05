@@ -2,9 +2,8 @@
 
 namespace AlexanderOMara\FlarumGravatar\Extenders;
 
-use Flarum\Api\Event\Serializing;
 use Flarum\Api\Serializer\BasicUserSerializer;
-use Flarum\Extend\ExtenderInterface;
+use Flarum\Extend\ApiSerializer;
 use Flarum\Extension\Extension;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Illuminate\Contracts\Container\Container;
@@ -14,13 +13,22 @@ use AlexanderOMara\FlarumGravatar\Core;
 /**
  * BasicUserSerializing class.
  */
-class BasicUserSerializing implements ExtenderInterface {
+class BasicUserSerializing extends ApiSerializer {
 	/**
-	 * Container object.
+	 * Settings object.
 	 *
-	 * @var Container|null
+	 * @var SettingsRepositoryInterface|null
 	 */
-	protected /*?Container*/ $container = null;
+	protected /*?SettingsRepositoryInterface*/ $settings = null;
+
+	/**
+	 * BasicUserSerializing class.
+	 */
+	public function __construct() {
+		parent::__construct(BasicUserSerializer::class);
+
+		$this->attribute('avatarUrl', [$this, 'avatarUrl']);
+	}
 
 	/**
 	 * Extend method.
@@ -28,31 +36,28 @@ class BasicUserSerializing implements ExtenderInterface {
 	 * @param Container $container Container object.
 	 * @param Extension|null $extension Extension object.
 	 */
-	public function extend(
-		Container $container,
-		Extension $extension = null
-	): void {
-		$this->container = $container;
+	public function extend(Container $container, Extension $extension = null) {
+		parent::extend($container, $extension);
 
-		$container->events->listen(Serializing::class, [$this, 'serializing']);
+		$this->settings = $container->make(SettingsRepositoryInterface::class);
 	}
 
 	/**
-	 * Serializing callback.
+	 * Attribute avatarUrl value callback.
 	 *
-	 * @param Serializing $event Serializing event.
+	 * @param BasicUserSerializer $serializer Serializer object.
+	 * @param mixed $model The model being serialized.
+	 * @param array $attributes Current attributes.
 	 */
-	public function serializing(Serializing $event): void {
-		if (!$event->isSerializer(BasicUserSerializer::class)) {
-			return;
-		}
-
-		// Replace the avatar URL.
-		$key = 'avatarUrl';
-		$event->attributes[$key] = Core::userAvatarUrl(
-			$this->container->make(SettingsRepositoryInterface::class),
-			$event->model,
-			$event->attributes[$key]
+	public function avatarUrl(
+		BasicUserSerializer $serializer,
+		$model,
+		array $attributes
+	) {
+		return Core::userAvatarUrl(
+			$this->settings,
+			$model,
+			$attributes[$key] ?? $model->avatar_url
 		);
 	}
 }
