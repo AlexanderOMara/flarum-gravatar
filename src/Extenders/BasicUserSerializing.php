@@ -37,9 +37,9 @@ class BasicUserSerializing extends ApiSerializer {
 	 * @param Extension|null $extension Extension object.
 	 */
 	public function extend(Container $container, Extension $extension = null) {
-		parent::extend($container, $extension);
-
 		$this->settings = $container->make(SettingsRepositoryInterface::class);
+
+		return parent::extend($container, $extension);
 	}
 
 	/**
