@@ -53,7 +53,7 @@ class BasicUserSerializing extends ApiSerializer {
 		$model,
 		array $attributes
 	) {
-		return $this->core->userAvatarUrl(
+		return $this->core->avatarUrl(
 			$model->email,
 			$attributes['avatarUrl'] ?? $model->avatar_url
 		);

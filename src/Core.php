@@ -102,7 +102,7 @@ class Core {
 	 * @param string|null $existing Existing URL.
 	 * @return string|null Avatar URL.
 	 */
-	public function userAvatarUrl(
+	public function avatarUrl(
 		string $email,
 		?string $existing = null
 	): ?string {
