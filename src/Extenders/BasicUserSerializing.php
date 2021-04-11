@@ -5,7 +5,6 @@ namespace AlexanderOMara\FlarumGravatar\Extenders;
 use Flarum\Api\Serializer\BasicUserSerializer;
 use Flarum\Extend\ApiSerializer;
 use Flarum\Extension\Extension;
-use Flarum\Settings\SettingsRepositoryInterface;
 use Illuminate\Contracts\Container\Container;
 
 use AlexanderOMara\FlarumGravatar\Core;
@@ -15,11 +14,11 @@ use AlexanderOMara\FlarumGravatar\Core;
  */
 class BasicUserSerializing extends ApiSerializer {
 	/**
-	 * Settings object.
+	 * Core object.
 	 *
-	 * @var SettingsRepositoryInterface|null
+	 * @var Core|null
 	 */
-	protected /*?SettingsRepositoryInterface*/ $settings = null;
+	protected /*?Core*/ $core = null;
 
 	/**
 	 * BasicUserSerializing class.
@@ -37,7 +36,7 @@ class BasicUserSerializing extends ApiSerializer {
 	 * @param Extension|null $extension Extension object.
 	 */
 	public function extend(Container $container, Extension $extension = null) {
-		$this->settings = $container->make(SettingsRepositoryInterface::class);
+		$this->core = $container->make(Core::class);
 
 		return parent::extend($container, $extension);
 	}
@@ -54,9 +53,8 @@ class BasicUserSerializing extends ApiSerializer {
 		$model,
 		array $attributes
 	) {
-		return Core::userAvatarUrl(
-			$this->settings,
-			$model,
+		return $this->core->userAvatarUrl(
+			$model->email,
 			$attributes['avatarUrl'] ?? $model->avatar_url
 		);
 	}

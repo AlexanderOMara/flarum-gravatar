@@ -25,87 +25,111 @@ class Core {
 	public const SIZE_LARGEST_2X = (96 * 2);
 
 	/**
-	 * If an empty string, return null, else return the string.
+	 * Settings object.
 	 *
-	 * @param string|null $str String value.
-	 * @return string|null The string or null.
+	 * @var SettingsRepositoryInterface
 	 */
-	public static function emptyStringNull(?string $str) {
-		return $str === '' ? null : $str;
+	protected /*SettingsRepositoryInterface*/ $settings;
+
+	/**
+	 * Core functionality.
+	 *
+	 * @param SettingsRepositoryInterface $settings Settings object.
+	 */
+	public function __construct(SettingsRepositoryInterface $settings) {
+		$this->settings = $settings;
 	}
 
 	/**
 	 * Get setting value for this extension.
 	 *
-	 * @param SettingsRepositoryInterface $settings Settings object.
 	 * @param string $key Setting key.
 	 * @return string|null Setting value.
 	 */
-	public static function setting(
-		SettingsRepositoryInterface $settings,
-		string $key
+	public function setting(string $key): ?string {
+		return $this->settings->get(static::ID . '.' . $key);
+	}
+
+	/**
+	 * Get setting value for this extension.
+	 *
+	 * @return string|null Setting value.
+	 */
+	public function settingDefault(): string {
+		return $this->setting('default') ?? '';
+	}
+
+	/**
+	 * Get setting value for this extension.
+	 *
+	 * @return string|null Setting value.
+	 */
+	public function settingDefaultForce(): bool {
+		return (bool)$this->setting('default_force');
+	}
+
+	/**
+	 * Get setting value for this extension.
+	 *
+	 * @return string|null Setting value.
+	 */
+	public function settingRating(): string {
+		return $this->setting('rating') ?? '';
+	}
+
+	/**
+	 * Get setting value for this extension.
+	 *
+	 * @return string|null Setting value.
+	 */
+	public function settingDisableLocal(): bool {
+		return (bool)$this->setting('disable_local');
+	}
+
+	/**
+	 * Get setting value for this extension.
+	 *
+	 * @return string|null Setting value.
+	 */
+	public function settingLinkNewTab(): bool {
+		return (bool)$this->setting('link_new_tab');
+	}
+
+	/**
+	 * Get avatar URL for email, or keep existing.
+	 *
+	 * @param string $email The email.
+	 * @param string|null $existing Existing URL.
+	 * @return string|null Avatar URL.
+	 */
+	public function userAvatarUrl(
+		string $email,
+		?string $existing = null
 	): ?string {
-		return $settings->get(static::ID . '.' . $key);
+		// If an existing avatar and local not disabled, use that.
+		if ($existing && !$this->settingDisableLocal()) {
+			return $existing;
+		}
+
+		// Create the Gravatar URL.
+		return static::gravatarUrl($email, [
+			'default' => $this->settingDefault(),
+			'force' => $this->settingDefaultForce() ? 'y' : '',
+			'rating' => $this->settingRating(),
+			'size' => static::SIZE_LARGEST_2X
+		]);
 	}
 
 	/**
-	 * Get setting value for this extension.
+	 * Add payload to document.
 	 *
-	 * @param SettingsRepositoryInterface $settings Settings object.
-	 * @return string|null Setting value.
+	 * @param Document $view Document view.
 	 */
-	public static function settingDefault(
-		SettingsRepositoryInterface $settings
-	): string {
-		return static::setting($settings, 'default') ?? '';
-	}
-
-	/**
-	 * Get setting value for this extension.
-	 *
-	 * @param SettingsRepositoryInterface $settings Settings object.
-	 * @return string|null Setting value.
-	 */
-	public static function settingDefaultForce(
-		SettingsRepositoryInterface $settings
-	): bool {
-		return (bool)static::setting($settings, 'default_force');
-	}
-
-	/**
-	 * Get setting value for this extension.
-	 *
-	 * @param SettingsRepositoryInterface $settings Settings object.
-	 * @return string|null Setting value.
-	 */
-	public static function settingRating(
-		SettingsRepositoryInterface $settings
-	): string {
-		return static::setting($settings, 'rating') ?? '';
-	}
-
-	/**
-	 * Get setting value for this extension.
-	 *
-	 * @param SettingsRepositoryInterface $settings Settings object.
-	 * @return string|null Setting value.
-	 */
-	public static function settingDisableLocal(
-		SettingsRepositoryInterface $settings
-	): bool {
-		return (bool)static::setting($settings, 'disable_local');
-	}
-
-	/**
-	 * Get setting value for this extension.
-	 *
-	 * @param SettingsRepositoryInterface $settings Settings object.
-	 * @return string|null Setting value.
-	 */
-	public static function settingLinkNewTab(
-		SettingsRepositoryInterface $settings
-	): bool {
-		return (bool)static::setting($settings, 'link_new_tab');
+	public function addPayload(Document $view): void {
+		$view->payload[static::ID] = [
+			'disableLocal' => $this->settingDisableLocal(),
+			'linkNewTab' => $this->settingLinkNewTab()
+		];
 	}
 
 	/**
@@ -116,7 +140,7 @@ class Core {
 	 * @return string Gravatar URL.
 	 */
 	public static function gravatarUrl(string $email, ?array $opts = null) {
-		$opts = $opts === null ? [] : $opts;
+		$opts = $opts ?: null;
 		$hash = md5(strtolower(trim($email)));
 		$query = http_build_query([
 			'd' => static::emptyStringNull($opts['default'] ?? null),
@@ -129,45 +153,12 @@ class Core {
 	}
 
 	/**
-	 * Get avatar URL for user, or keep existing.
+	 * If an empty string, return null, else return the value.
 	 *
-	 * @param SettingsRepositoryInterface $settings Settings object.
-	 * @param User $user User object.
-	 * @param string|null $existing Existing URL.
-	 * @return string|null Avatar URL.
+	 * @param mixed $str The value.
+	 * @return string|null The string or null.
 	 */
-	public static function userAvatarUrl(
-		SettingsRepositoryInterface $settings,
-		User $user,
-		?string $existing = null
-	): ?string {
-		// If an existing avatar and local not disabled, use that.
-		if ($existing && !static::settingDisableLocal($settings)) {
-			return $existing;
-		}
-
-		// Create the Gravatar URL.
-		return static::gravatarUrl($user->email, [
-			'default' => static::settingDefault($settings),
-			'force' => static::settingDefaultForce($settings) ? 'y' : '',
-			'rating' => static::settingRating($settings),
-			'size' => static::SIZE_LARGEST_2X
-		]);
-	}
-
-	/**
-	 * Add payload to document.
-	 *
-	 * @param Document $view Document view.
-	 * @param SettingsRepositoryInterface $settings Settings object.
-	 */
-	public static function addPayload(
-		Document $view,
-		SettingsRepositoryInterface $settings
-	): void {
-		$view->payload[static::ID] = [
-			'disableLocal' => static::settingDisableLocal($settings),
-			'linkNewTab' => static::settingLinkNewTab($settings)
-		];
+	public static function emptyStringNull($value) {
+		return $value === '' ? null : $value;
 	}
 }

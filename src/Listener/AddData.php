@@ -3,7 +3,6 @@
 namespace AlexanderOMara\FlarumGravatar\Listener;
 
 use Flarum\Frontend\Document;
-use Flarum\Settings\SettingsRepositoryInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 use AlexanderOMara\FlarumGravatar\Core;
@@ -13,19 +12,19 @@ use AlexanderOMara\FlarumGravatar\Core;
  */
 class AddData {
 	/**
-	 * Settings object.
+	 * Core object.
 	 *
-	 * @var SettingsRepositoryInterface
+	 * @var Core
 	 */
-	protected /*SettingsRepositoryInterface*/ $settings;
+	protected /*Core*/ $core;
 
 	/**
 	 * Data hook.
 	 *
-	 * @param SettingsRepositoryInterface $settings Settings object.
+	 * @param Core $core SCore object.
 	 */
-	public function __construct(SettingsRepositoryInterface $settings) {
-		$this->settings = $settings;
+	public function __construct(Core $core) {
+		$this->core = $core;
 	}
 
 	/**
@@ -35,6 +34,6 @@ class AddData {
 	 * @param Request $request Request object.
 	 */
 	public function __invoke(Document $view, Request $request): void {
-		Core::addPayload($view, $this->settings);
+		$this->core->addPayload($view);
 	}
 }

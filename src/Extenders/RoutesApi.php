@@ -4,7 +4,6 @@ namespace AlexanderOMara\FlarumGravatar\Extenders;
 
 use Flarum\Extend\Routes;
 use Flarum\Extension\Extension;
-use Flarum\Settings\SettingsRepositoryInterface;
 use Illuminate\Contracts\Container\Container;
 
 use AlexanderOMara\FlarumGravatar\Core;
@@ -27,10 +26,10 @@ class RoutesApi extends Routes {
 	 * @param Extension|null $extension Extension object.
 	 */
 	public function extend(Container $container, Extension $extension = null) {
-		$settings = $container->make(SettingsRepositoryInterface::class);
+		$core = $container->make(Core::class);
 
 		// If local avatars disabled, do not allow upload.
-		if (Core::settingDisableLocal($settings)) {
+		if ($core->settingDisableLocal()) {
 			$this->remove('POST', 'users.avatar.upload');
 		}
 
