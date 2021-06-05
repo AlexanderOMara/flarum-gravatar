@@ -30,7 +30,7 @@ class RoutesApi extends Routes {
 
 		// If local avatars disabled, do not allow upload.
 		if ($core->settingDisableLocal()) {
-			$this->remove('POST', 'users.avatar.upload');
+			$this->remove('users.avatar.upload');
 		}
 
 		return parent::extend($container, $extension);
