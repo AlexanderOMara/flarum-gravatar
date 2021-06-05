@@ -3,8 +3,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-flarum_version='v0.1.0-beta.16'
-
 flarum_config_json='/tmp/flarum.json'
 
 # Wait for and optionally create a MySQL table.
@@ -51,7 +49,7 @@ if [[ ! -d 'vendor' ]]; then
 		--stability=beta \
 		flarum/flarum \
 		. \
-		"${flarum_version}"
+		"${FLARUM_VERSION}"
 	chmod +x flarum
 
 	# Remove public directory from directory structure.

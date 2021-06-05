@@ -5,6 +5,7 @@ set -o pipefail
 
 # Install variables.
 install_envs=(
+	FLARUM_VERSION
 	FLARUM_DB_HOST
 	FLARUM_DB_USER
 	FLARUM_DB_PASS
