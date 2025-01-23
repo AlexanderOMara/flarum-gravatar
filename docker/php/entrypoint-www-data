@@ -46,7 +46,6 @@ if [[ ! -d 'vendor' ]]; then
 
 	# Download Flarum.
 	composer create-project \
-		--stability=beta \
 		flarum/flarum \
 		. \
 		"${FLARUM_VERSION}"
